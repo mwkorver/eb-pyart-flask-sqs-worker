@@ -2,8 +2,17 @@
 This Python sample application illustrates the worker role functionality of AWS Elastic Beanstalk. It is designed to process SQS messages generated from a subscription to the [NEXRAD Public Data Set on AWS](http://aws.amazon.com/noaa-big-data/nexrad/). SQS Messages contain information about new NEXRAD data landing in the noaa-nexrad-level2 S3 bucket for archive data and unidata-nexrad-level2-chunks for, real-time chunk data.
 
 
-## Message Format
-To test the worker app without the frontend, you can manually enqueue messages of the following json format and send to the worker app using an HTTP POST request:
+The real-time (chunks) data is in the “unidata-nexrad-level2-chunks” Amazon S3 bucket.
+The Amazon Resource Name (ARN) is arn:aws:sns:us-east-1:684042711724:NewNEXRADLevel2Object.
+The archive (volume scan) data is in the “noaa-nexrad-level2” Amazon S3 bucket.
+The ARN is arn:aws:sns:us-east- 1:811054952067:NewNEXRADLevel2Archive
+Both of these S3 Buckets are the US East-1 Region
+
+To subscribe your own SQS queue to NEXRAD notifications so that you can use this project, please look at [this page] (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqssubscribe.html).
+
+
+## Sample Message Format
+To test the Amazon Beanstalk Worker app you can manually enqueue messages of the following json format:
 
 {
   "Type" : "Notification",
