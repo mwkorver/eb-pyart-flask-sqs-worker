@@ -19,4 +19,4 @@ To test the worker app without the frontend, you can manually enqueue messages o
 }
 
 ## IAM Role Permissions
-The worker role must run in an IAM role with permissions to SES and SQS. An example policy is included in [iam_policy.json](iam_policy.json).
+The worker role must run in an IAM role with permissions to SQS and S3. An example policy is included in [iam_policy.json](iam_policy.json).
