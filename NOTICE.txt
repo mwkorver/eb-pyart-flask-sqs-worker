@@ -1,2 +1,2 @@
-eb-py-flask-signup-worker
-Copyright 2013 Amazon.com, Inc. or its affiliates. All Rights Reserved. 
+eb-py-flask-sqs-worker
+Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved. 
