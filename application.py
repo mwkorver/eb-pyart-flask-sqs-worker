@@ -68,7 +68,7 @@ def customer_registered():
             srcKey.key = objectKey
             srcKey.get_contents_to_filename('/tmp/test.test')
 
-            # do something to the data here.
+            # Do something to the data here.
 
             # Boto 2.x
             s3_conn = boto.connect_s3()
