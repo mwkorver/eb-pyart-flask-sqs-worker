@@ -12,51 +12,69 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import boto
 import logging
+import os
 import json
-
 import flask
 from flask import request, Response
+import boto
+import urllib.request	
+
+local_Dir = '/tmp/'
+url_S3_Prefix = 'http://s3.amazonaws.com/'                      
 
 # Create and configure the Flask app
 application = flask.Flask(__name__)
 application.config.from_object('default_config')
 application.debug = application.config['FLASK_DEBUG'] in ['true', 'True']
 
-# Email message vars
-SUBJECT = "Thanks for signing up!"
-BODY = "Hi %s!\n\nWe're excited that you're excited about our new product! We'll let you know as soon as it's available.\n\nThanks,\n\nA New Startup"
-
-@application.route('/customer-registered', methods=['POST'])
+@application.route('/nexrad', methods=['POST'])
 def customer_registered():
     """Send an e-mail using SES"""
-
     response = None
     if request.json is None:
         # Expect application/json request
-        response = Response("", status=415)
+        response = Response("no json in body", status=415)
     else:
         message = dict()
         try:
             # If the message has an SNS envelope, extract the inner message
-            if request.json.has_key('TopicArn') and request.json.has_key('Message'):
-                message = json.loads(request.json['Message'])
+            if 'TopicArn' in request.json and 'Message' in request.json:
+            	#if 'TopicArn' in request.json:
+                logging.exception('in the test loop tttttttttttttttttttttttttttttttttttttttttttttttt')
+                message = json.loads(request.json['Message'])                
+                bucketName = message['Records'][0]['s3']['bucket']['name']
+                objectKey = message['Records'][0]['s3']['object']['key']
+                value = bucketName + '/' + objectKey
+                #response = Response(value, status=200)
             else:
-                message = request.json
-            
-            # Connect to SES and send an e-mail    
-            ses = boto.connect_ses()
-            ses.send_email(source=application.config['SOURCE_EMAIL_ADDRESS'],
-                           subject=SUBJECT,
-                           body=BODY % (message['name']),
-                           to_addresses=[message['email']])
-            response = Response("", status=200)
+                response = Response("in else part", status=200)    
+                # message = request.json
+
+            url = url_S3_Prefix + bucketName + "/" + objectKey
+            file_name = local_Dir + objectKey
+            if not os.path.exists(os.path.dirname(file_name)):
+                os.makedirs(os.path.dirname(file_name))		
+
+            open(file_name, 'a+')
+            urllib.request.urlretrieve(url, file_name)
+
+            response = Response(value, status=200)
+
         except Exception as ex:
-            logging.exception('Error processing message: %s' % request.json)
-            response = Response(ex.message, status=500)
+            logging.exception('Error processing SQS message: %s' % request.json)
+            # response = Response(ex.message, status=500))
+            response = Response("exception part -eeeeeeeeeeeeeeeee", status=500)
+            raise
+            # response = Response(flask.jsonify(request.json), status=500)
 
     return response
 
+# https://codeseekah.com/2012/10/28/dubugging-flask-applications-under-uwsgi/
+if ( application.debug ):
+    from werkzeug.debug import DebuggedApplication
+    application.wsgi_app = DebuggedApplication( application.wsgi_app, True )
+
 if __name__ == '__main__':
     application.run(host='0.0.0.0')
+
