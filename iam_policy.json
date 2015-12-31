@@ -1,0 +1,56 @@
+{
+    "Statement": [
+        {
+            "Sid": "NexradS3BucketAccess",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::noaa-nexrad-level2/*",
+                "arn:aws:s3:::unidata-nexrad-level2-chunks/*"
+            ],
+            "Condition": {
+                "Bool": {
+                    "aws:SecureTransport": "True"
+                }
+            }
+        },
+        {
+            "Sid": "OwnS3BucketAccess",
+            "Effect": "Allow",
+            "Action": [
+                "s3:DeleteObject",
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::your-bucket-name/noaa-nexrad-level2/*",
+                "arn:aws:s3:::your-bucket-name/unidata-nexrad-level2-chunks/*"
+            ],
+            "Condition": {
+                "Bool": {
+                    "aws:SecureTransport": "True"
+                }
+            }
+        },
+        {
+            "Sid": "SqsAcess",
+            "Action": [
+                "sqs:ChangeMessageVisibility",
+                "sqs:DeleteMessage",
+                "sqs:ReceiveMessage"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Sid": "CloudWatchMetricsAccess",
+            "Action": [
+                "cloudwatch:PutMetricData"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}
