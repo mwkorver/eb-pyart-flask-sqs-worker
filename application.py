@@ -21,16 +21,23 @@ from flask import request, Response
 
 local_Dir = '/tmp/'
 log_bucket = 'eb-py-flask-sqs-worker-log'
-radarSite = 'KCLEx'                      
+radarSite = '/KCLE/'                      
 
 # Create and configure the Flask app
 application = flask.Flask(__name__)
 application.config.from_object('default_config')
 application.debug = application.config['FLASK_DEBUG'] in ['true', 'True']
 
+
+@application.route('/heartbeat', methods=['GET'])
+def heartbeat():
+    """Process NEXRAD data by parsing SQS message"""
+    response = Response("running", status=200)
+    return response
+
 @application.route('/nexrad', methods=['POST'])
 def customer_registered():
-    """Process NEXRAD data using by parsing SQS message"""
+    """Process NEXRAD data by parsing SQS message"""
     response = None
     if request.json is None:
         # Expect application/json request
@@ -46,7 +53,6 @@ def customer_registered():
 
             bucketName = message['Records'][0]['s3']['bucket']['name']
             objectKey = message['Records'][0]['s3']['object']['key']
-            #value = bucketName + '/' + objectKey
 
             # Filter for a particular station
             if radarSite in objectKey:
