@@ -21,7 +21,7 @@ from flask import request, Response
 
 local_Dir = '/tmp/'
 log_bucket = 'eb-py-flask-sqs-worker-log'
-radarSite = '/KCLE/'                      
+filterCondition = '/KCLE/'                      
 
 # Create and configure the Flask app
 application = flask.Flask(__name__)
@@ -55,7 +55,7 @@ def customer_registered():
             objectKey = message['Records'][0]['s3']['object']['key']
 
             # Filter for a particular station
-            if radarSite in objectKey:
+            if filterCondition in objectKey:
 
                 file_name = local_Dir + objectKey
                 if not os.path.exists(os.path.dirname(file_name)):
@@ -81,7 +81,7 @@ def customer_registered():
                 response = Response("processed NEXRAD data:  " + objectKey, status=200)
 
             else:
-                response = Response("This data does not satisfy filter:  " + objectKey, status=200)
+                response = Response("This data does not satisfy filter condition [ " + filterCondition + " ]", status=200)
 
         except Exception as ex:
             logging.exception('Error processing SQS message: %s' % request.json)
