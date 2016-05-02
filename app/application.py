@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#     http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,9 +19,15 @@ import os
 import json
 from flask import request, Response
 
+import numpy as np
+import matplotlib.pyplot as plt
+import pyart
+import tempfile
+import time
+
 local_Dir = '/tmp/'
 log_bucket = 'eb-py-flask-sqs-worker-log'
-filterCondition = '/KCLE/'                      
+filterCondition = '/KEYX/'                      
 
 # Create and configure the Flask app
 application = flask.Flask(__name__)
@@ -59,24 +65,56 @@ def customer_registered():
 
                 file_name = local_Dir + objectKey
                 if not os.path.exists(os.path.dirname(file_name)):
-                    os.makedirs(os.path.dirname(file_name))		
+                    os.makedirs(os.path.dirname(file_name))   
 
                 s3_conn = boto.connect_s3()
                 srcBucket = s3_conn.get_bucket(bucketName, validate=False)
                 from boto.s3.key import Key
                 srcKey = Key(srcBucket)
-                srcKey.key = objectKey
-                srcKey.get_contents_to_filename(file_name)
+                srcKey.key = objectKey            
+                #srcKey.get_contents_to_filename(file_name)
 
                 # Do something to the data here.
+
+                # read a volume scan file on S3. I happen to know this file exists.
+                #s3conn = boto.connect_s3()
+                #bucket = s3conn2.get_bucket('noaa-nexrad-level2')
+                #s3key = bucket.get_key('2015/05/15/KVWX/KVWX20150515_080737_V06.gz')
+                #print s3key
+
+                # Download to a local file, and read it
+                # localfile = tempfile.NamedTemporaryFile()
+                localfile = tempfile.NamedTemporaryFile(delete=True)
+                print('starting to get object from S3')
+                srcKey.get_contents_to_filename(localfile.name)
+                print('done getting object from S3')
+
+                radar = pyart.io.read_nexrad_archive(localfile.name)
+                localfile.close()  # deletes the temp file
+
+                print('Doing Grid')
+                start = time.time()
+                lon0 = radar.longitude['data'][0]
+                lat0 = radar.latitude['data'][0]
+                radar_list = [radar]
+                grid = pyart.map.grid_from_radars(radar_list, grid_shape=(20, 201, 201), grid_limits=((1000, 20000), (-200000, 200000), (-200000, 200000)), grid_origin = (lat0, lon0), fields=['reflectivity'],gridding_algo='map_gates_to_grid',grid_origin_alt=0.0)
+                print('Grid Done')
+                end = time.time()
+                print(end - start)
+
+                print('Starting to write geotif')
+                pyart.io.write_grid_geotiff(grid, 'test_warp', 'reflectivity', rgb=True, warp=True, vmin=0, vmax=75,cmap='pyart_LangRainbow12', sld=False)
+                print('Done writing geotif')
+
 
                 # Writes result to own S3 bucket using Boto 2.x
                 s3_conn = boto.connect_s3()
                 logBucket = s3_conn.get_bucket(log_bucket, validate=False)
                 from boto.s3.key import Key
                 logKey = Key(logBucket)
-                logKey.key = objectKey
-                logKey.set_contents_from_filename(file_name)
+                destKey = objectKey.split('.')[0] + '.tif'
+                logKey.key = destKey
+                logKey.set_contents_from_filename('test_warp.tif')
 
                 response = Response("processed NEXRAD data:  " + objectKey, status=200)
 
@@ -98,3 +136,24 @@ if ( application.debug ):
 if __name__ == '__main__':
     application.run(host='0.0.0.0')
 
+
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
