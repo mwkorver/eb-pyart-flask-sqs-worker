@@ -49,16 +49,18 @@ RUN conda update -y conda
 # Install AWS CLI for debugging purposes
 # RUN pip install awscli
 
-ADD application.py application.py 
-ADD default_config.py default_config.py  
 
-#CMD python application.py &
+# Setup Flask application
+RUN mkdir -p /deploy/app
+COPY gunicorn_config.py /deploy/gunicorn_config.py
+COPY app /deploy/app
+WORKDIR /deploy/app
 
 EXPOSE 22 5000
 
 ENV LANG C.UTF-8
 
-CMD [ "/bin/bash" ]
-ENTRYPOINT ["python"]
-#CMD ["application.py"]
-#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+#CMD [ "/bin/bash" ]
+
+# Start gunicorn
+CMD ["/miniconda/bin/gunicorn", "--config", "/deploy/gunicorn_config.py", "application:application"]
