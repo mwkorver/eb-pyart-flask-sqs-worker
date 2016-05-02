@@ -1,4 +1,4 @@
-# eb-py-flask-sqs-worker
+# eb-pyart-flask-sqs-worker
 This Python sample application illustrates how to use AWS Elastic Beanstalk in Worker mode to process NEXRAD as function of SNS notifications. It is designed to process SQS messages generated from a subscription to SNS topic that announce new data arriving in the 2 S3 buckets that contain the [NEXRAD Public Data Sets on AWS](http://aws.amazon.com/noaa-big-data/nexrad/). SQS Messages contain information about new NEXRAD data landing in the noaa-nexrad-level2 S3 bucket for archive data and unidata-nexrad-level2-chunks for, real-time chunk data.
 
 The real-time (chunks) data is in the “unidata-nexrad-level2-chunks” Amazon S3 bucket.
