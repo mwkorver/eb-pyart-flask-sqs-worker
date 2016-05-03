@@ -26,8 +26,8 @@ import tempfile
 import time
 
 local_Dir = '/tmp/'
-log_bucket = 'eb-py-flask-sqs-worker-log'
-filterCondition = '/KEYX/'                      
+log_bucket = 'eb-pyart-flask-sqs-worker-output'
+filterCondition = '/KRLX/'                      
 
 # Create and configure the Flask app
 application = flask.Flask(__name__)
@@ -113,8 +113,10 @@ def customer_registered():
                 from boto.s3.key import Key
                 logKey = Key(logBucket)
                 destKey = objectKey.split('.')[0] + '.tif'
-                logKey.key = destKey
+                logKey.key = destKey.split('/')[4]
+                print('Starting to write file: ' + logKey.key + ' to S3')
                 logKey.set_contents_from_filename('test_warp.tif')
+                print('Finished writing to S3')
 
                 response = Response("processed NEXRAD data:  " + objectKey, status=200)
 
