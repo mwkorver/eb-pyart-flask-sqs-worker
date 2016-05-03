@@ -3,7 +3,7 @@ FROM ubuntu:14.04
 MAINTAINER Mark Korver<mwkorver@gmail.com>
 
 # System packages 
-RUN apt-get update && apt-get install -y curl git gcc gdal-bin
+RUN apt-get update && apt-get install -y curl git gcc gdal-bin nano
 
 # Install miniconda
 RUN curl -LO http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh &&\
@@ -45,12 +45,8 @@ RUN git clone https://github.com/ARM-DOE/pyart.git &&\
 # Update conda packages
 RUN conda update -y conda
 
-# Install AWS CLI for debugging purposes
-# RUN pip install awscli
-
 # Setup Flask application
 RUN mkdir -p /deploy/app
-COPY gunicorn_config.py /deploy/gunicorn_config.py
 COPY app /deploy/app
 WORKDIR /deploy/app
 
@@ -60,5 +56,5 @@ ENV LANG C.UTF-8
 
 #CMD [ "/bin/bash" ]
 
-# Start gunicorn
-CMD ["/miniconda/bin/gunicorn", "--config", "/deploy/gunicorn_config.py", "application:application"]
+ENTRYPOINT ["python"]
+CMD ["application.py"]

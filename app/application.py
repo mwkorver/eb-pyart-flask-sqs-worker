@@ -112,8 +112,8 @@ def customer_registered():
                 logBucket = s3_conn.get_bucket(log_bucket, validate=False)
                 from boto.s3.key import Key
                 logKey = Key(logBucket)
-                destKey = objectKey.split('.')[0] + '.tif'
-                logKey.key = destKey.split('/')[4]
+                destKey = objectKey.split('.')[0]
+                logKey.key = destKey.split('/')[3] + '.tif'
                 print('Starting to write file: ' + logKey.key + ' to S3')
                 logKey.set_contents_from_filename('test_warp.tif')
                 print('Finished writing to S3')
