@@ -27,7 +27,7 @@ import time
 
 local_Dir = '/tmp/'
 log_bucket = 'eb-pyart-flask-sqs-worker-output'
-filterCondition = '/KRLX/'                      
+filterCondition = '*'                      
 
 # Create and configure the Flask app
 application = flask.Flask(__name__)
@@ -61,7 +61,7 @@ def customer_registered():
             objectKey = message['Records'][0]['s3']['object']['key']
 
             # Filter for a particular station
-            if filterCondition in objectKey:
+            if (filterCondition in objectKey) or (filterCondition == '*'):
 
                 file_name = local_Dir + objectKey
                 if not os.path.exists(os.path.dirname(file_name)):
@@ -72,15 +72,8 @@ def customer_registered():
                 from boto.s3.key import Key
                 srcKey = Key(srcBucket)
                 srcKey.key = objectKey            
-                #srcKey.get_contents_to_filename(file_name)
 
                 # Do something to the data here.
-
-                # read a volume scan file on S3. I happen to know this file exists.
-                #s3conn = boto.connect_s3()
-                #bucket = s3conn2.get_bucket('noaa-nexrad-level2')
-                #s3key = bucket.get_key('2015/05/15/KVWX/KVWX20150515_080737_V06.gz')
-                #print s3key
 
                 # Download to a local file, and read it
                 # localfile = tempfile.NamedTemporaryFile()
