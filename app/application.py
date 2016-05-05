@@ -26,8 +26,9 @@ import tempfile
 import time
 
 local_Dir = '/tmp/'
-log_bucket = 'eb-pyart-flask-sqs-worker-output'
-filterCondition = '*'                      
+# Use your own bucket name as default here
+outputBucket = os.getenv('OUTPUTBUCKET', 'eb-pyart-flask-sqs-worker-output')                      
+stationFilter = os.getenv('STATIONFILTER', '*')                      
 
 # Create and configure the Flask app
 application = flask.Flask(__name__)
@@ -61,7 +62,7 @@ def customer_registered():
             objectKey = message['Records'][0]['s3']['object']['key']
 
             # Filter for a particular station
-            if (filterCondition in objectKey) or (filterCondition == '*'):
+            if (stationFilter in objectKey) or (stationFilter == '*'):
 
                 file_name = local_Dir + objectKey
                 if not os.path.exists(os.path.dirname(file_name)):
@@ -102,7 +103,7 @@ def customer_registered():
 
                 # Writes result to own S3 bucket using Boto 2.x
                 s3_conn = boto.connect_s3()
-                logBucket = s3_conn.get_bucket(log_bucket, validate=False)
+                logBucket = s3_conn.get_bucket(outputBucket, validate=False)
                 from boto.s3.key import Key
                 logKey = Key(logBucket)
                 destKey = objectKey.split('.')[0]
@@ -114,7 +115,7 @@ def customer_registered():
                 response = Response("processed NEXRAD data:  " + objectKey, status=200)
 
             else:
-                response = Response("This data does not satisfy filter condition [ " + filterCondition + " ]", status=200)
+                response = Response("This data does not satisfy filter condition [ " + stationFilter + " ]", status=200)
 
         except Exception as ex:
             logging.exception('Error processing SQS message: %s' % request.json)
