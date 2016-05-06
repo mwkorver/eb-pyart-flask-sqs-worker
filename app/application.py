@@ -28,6 +28,7 @@ import time
 local_Dir = '/tmp/'
 # Use your own bucket name as default here
 outputBucket = os.getenv('OUTPUTBUCKET', 'eb-pyart-flask-sqs-worker-output')                      
+outputPrefix = os.getenv('OUTPUTPREFIX', 'test')                      
 stationFilter = os.getenv('STATIONFILTER', '*')                      
 
 # Create and configure the Flask app
@@ -107,7 +108,7 @@ def customer_registered():
                 from boto.s3.key import Key
                 logKey = Key(logBucket)
                 destKey = objectKey.split('.')[0]
-                logKey.key = destKey.split('/')[3] + '.tif'
+                logKey.key = outputPrefix + '/' + destKey.split('/')[3] + '.tif'
                 print('Starting to write file: ' + logKey.key + ' to S3')
                 logKey.set_contents_from_filename('test_warp.tif')
                 print('Finished writing to S3')
