@@ -14,6 +14,7 @@ To subscribe your own SQS queue to NEXRAD notifications so that you can use this
 ## Sample Message Format (Archive data)
 To test the Amazon Beanstalk Worker app you can manually enqueue messages of the following json format:
 
+```
 {
   "Type" : "Notification",
   "MessageId" : "4881eba1-f3f9-5336-bbd6-a55a561cc9ea",
@@ -26,7 +27,7 @@ To test the Amazon Beanstalk Worker app you can manually enqueue messages of the
   "SigningCertURL" : "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-bb750dd426d95ee9390147a5624348ee.pem",
   "UnsubscribeURL" : "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:811054952067:NewNEXRADLevel2Archive:2a3b3eef-bf2e-4d58-96a6-56d812097026"
 }
-
+```
 
 ## IAM Role Permissions
 The worker role must run in an IAM role with permissions to SQS and S3. An example policy is included in [iam_policy.json](iam_policy.json).
